@@ -1,0 +1,2 @@
+#!/usr/bin/env node
+require('./ndjson-to-csv.js')

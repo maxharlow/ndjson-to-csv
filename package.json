@@ -1,0 +1,22 @@
+{
+    "name": "ndjson-to-csv",
+    "description": "Convert a ND-Json file to CSV in a memory-efficient way.",
+    "version": "1.0.0",
+    "author": "Max Harlow <maxharlow@gmail.com> (http://maxharlow.com/)",
+    "license": "Apache-2.0",
+    "preferGlobal": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/maxharlow/ndjson-to-csv.git"
+    },
+    "dependencies": {
+        "yargs": "10.1.x",
+        "highland": "2.11.x",
+        "ndjson": "1.5.x",
+        "flat": "4.0.x",
+        "csv-write-stream": "2.0.x"
+    },
+    "bin": {
+        "ndjson-to-csv": "./ndjson-to-csv"
+    }
+}
