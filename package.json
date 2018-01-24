@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "yargs": "10.1.x",
+        "progress": "2.0.x",
         "highland": "2.11.x",
         "ndjson": "1.5.x",
         "flat": "4.0.x",
