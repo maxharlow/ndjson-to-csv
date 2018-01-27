@@ -11,14 +11,18 @@ async function setup() {
     const interface = Yargs
         .usage('Usage: ndjson-to-csv [filename]')
         .wrap(null)
+        .option('e', { alias: 'only-show-headers', type: 'boolean', description: 'Only list the headers from the file' })
+        .option('f', { alias: 'use-first-row-headers', type: 'boolean', description: 'Use the headers from the first row (faster)' })
+        .option('q', { alias: 'quiet', type: 'boolean', description: 'Don\'t print out progress (faster)' })
         .help('?').alias('?', 'help')
         .version().alias('v', 'version')
     try {
         const input = interface.argv._[0]
         if (input === undefined && Process.stdin.isTTY) return interface.showHelp()
         if (input === undefined || input === '-') throw new Error('Error: reading from standard input not yet supported')
-        const output = await run(input)
-        output.pipe(CSVWriter()).pipe(Process.stdout)
+        const output = await run(input, interface.argv.onlyShowHeaders, interface.argv.useFirstRowHeaders, !interface.argv.quiet)
+        if (interface.argv.onlyShowHeaders) output.each(console.log)
+        else output.pipe(CSVWriter()).pipe(Process.stdout)
     }
     catch (e) {
         console.error(e.message)
@@ -26,14 +30,15 @@ async function setup() {
     }
 }
 
-async function run(filename) {
-    console.error('Starting up...')
-    const total = await length(read(filename))
+async function run(filename, onlyShowHeaders, useFirstRowHeaders, enableLogging) {
+    if (enableLogging) console.error('Starting up...')
+    const total = enableLogging ? await length(read(filename)) : null
     const headersData = read(filename)
-    headersData.observe().each(ticker('Detecting headers', total))
-    const headers = await detectHeaders(headersData)
+    if (enableLogging) headersData.observe().each(ticker('Detecting headers', total))
+    const headers = await detectHeaders(headersData, useFirstRowHeaders)
+    if (onlyShowHeaders) return Highland(headers)
     const bodyData = read(filename)
-    bodyData.observe().each(ticker('Writing data     ', total))
+    if (enableLogging) bodyData.observe().each(ticker('Writing data     ', total))
     const body = processBody(bodyData, headers)
     return body
 }
@@ -51,8 +56,14 @@ function length(input) {
     return input.reduce(0, a => a + 1).toPromise(Promise)
 }
 
-function detectHeaders(input) {
-    return input
+function detectHeaders(input, useFirstRow) {
+    if (useFirstRow) return input
+        .head()
+        .map(row => {
+            return Object.keys(Flat(row))
+        })
+        .toPromise(Promise)
+    else return input
         .reduce([], (a, row) => {
             const keys = Object.keys(Flat(row))
             return Array.from(new Set(a.concat(keys)))
