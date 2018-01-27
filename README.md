@@ -1,7 +1,7 @@
-NDJson to CSV
+NDJson-to-CSV
 =============
 
-Convert a NDJson file to CSV in a memory-efficient way.
+Convert NDJson format data into CSV. Data is streamed, so files much bigger than the available memory can still be converted. Takes into account nested Json objects.
 
 Requires [Node](https://nodejs.org/).
 
