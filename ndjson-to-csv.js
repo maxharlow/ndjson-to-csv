@@ -61,8 +61,10 @@ function processBody(filename, headers, tick) {
         .through(NDJson.parse())
         .map(row => {
             tick()
-            const blank = headers.reverse().reduce((a, header) => Object.assign({ [header]: '' }, a), {})
-            return Object.assign(blank, Flat(row))
+            const rowFlat = Flat(row)
+            return headers.slice().reverse().reduce((a, header) => {
+                return Object.assign({ [header]: rowFlat[header] }, a)
+            }, {})
         })
 }
 
