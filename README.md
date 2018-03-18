@@ -15,4 +15,4 @@ Installing
 Usage
 -----
 
-    $ ndjson-to-csv <filename>
+    $ ndjson-to-csv [input] > [output]
