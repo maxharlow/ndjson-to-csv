@@ -14,6 +14,7 @@
         "progress": "2.0.x",
         "highland": "2.11.x",
         "ndjson": "1.5.x",
+        "stream-json": "1.7.x",
         "flat": "4.0.x",
         "csv-write-stream": "2.0.x"
     },
