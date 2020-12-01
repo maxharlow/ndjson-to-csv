@@ -4,20 +4,21 @@
     "version": "1.3.0",
     "author": "Max Harlow <contact@maxharlow.com> (https://maxharlow.com/)",
     "license": "Apache-2.0",
+    "type": "module",
     "repository": {
         "type": "git",
         "url": "https://github.com/maxharlow/ndjson-to-csv.git"
     },
     "dependencies": {
-        "yargs": "10.1.x",
+        "csv-write-stream": "2.0.x",
+        "flat": "5.0.x",
+        "highland": "2.13.x",
+        "ndjson": "2.0.x",
         "progress": "2.0.x",
-        "highland": "2.11.x",
-        "ndjson": "1.5.x",
         "stream-json": "1.7.x",
-        "flat": "4.0.x",
-        "csv-write-stream": "2.0.x"
+        "yargs": "16.1.x"
     },
     "bin": {
-        "ndjson-to-csv": "./ndjson-to-csv"
+        "ndjson-to-csv": "./bin.js"
     }
 }
