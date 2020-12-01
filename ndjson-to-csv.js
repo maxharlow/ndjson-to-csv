@@ -1,7 +1,7 @@
 import FS from 'fs'
-import Highland from 'highland'
+import Scramjet from 'scramjet'
 import NDJson from 'ndjson'
-const { default: StreamArray } = await import('stream-json/streamers/StreamArray.js')
+import StreamArray from 'stream-json/streamers/StreamArray.js'
 import Flat from 'flat'
 
 function extract(object, path) {
@@ -18,38 +18,31 @@ function extract(object, path) {
 }
 
 function read(filename, isArray, retainPaths) {
-    const parser = isArray ? StreamArray.withParser() : NDJson.parse()
-    return Highland(FS.createReadStream(filename))
-        .through(parser)
-        .map(row => {
-            if (!retainPaths) return row
-            return retainPaths.reduce((a, path) => {
-                const data = JSON.stringify(extract(a, path))
-                return Object.assign(a, { [path]: data })
-            }, row)
-        })
+    const stream = isArray
+        ? Scramjet.DataStream.from(FS.createReadStream(filename).pipe(StreamArray.withParser())).map(entry => entry.value)
+        : Scramjet.DataStream.from(FS.createReadStream(filename).pipe(NDJson.parse()))
+    if (!retainPaths || retainPaths.length === 0) return stream
+    return stream.map(row => {
+        return retainPaths.reduce((a, path) => {
+            const data = JSON.stringify(extract(a, path))
+            return Object.assign(a, { [path]: data })
+        }, row)
+    })
 }
 
 function length(input) {
-    return input.reduce(0, a => a + 1).toPromise(Promise)
+    return input.reduce(a => a + 1, 0)
 }
 
 function detectHeaders(input, useFirstRow) {
-    if (useFirstRow) return input
-        .head()
-        .map(row => {
-            return Object.keys(Flat(row))
-        })
-        .toPromise(Promise)
-    else return input
-        .reduce([], (a, row) => {
-            const keys = Object.keys(Flat(row))
-            return Array.from(new Set(a.concat(keys)))
-        })
-        .toPromise(Promise)
+    if (useFirstRow) return input.slice(0, 1).flatMap(row => Object.keys(Flat(row))).toArray()
+    return input.reduce((a, row) => {
+        const keys = Object.keys(Flat(row))
+        return Array.from(new Set(a.concat(keys)))
+    }, [])
 }
 
-function processBody(input, headers) {
+function process(input, headers) {
     return input.map(row => {
         const rowFlat = Flat(row)
         return headers.slice().reverse().reduce((a, header) => {
@@ -58,16 +51,15 @@ function processBody(input, headers) {
     })
 }
 
-async function run(filename, onlyShowHeaders, useFirstRowHeaders, isArray, retainPaths, enableLogging, alert, ticker) {
-    if (enableLogging) alert('starting up...')
+async function run(filename, onlyShowHeaders = false, useFirstRowHeaders = false, isArray = false, retainPaths = [], enableLogging = true, ticker = () => {}) {
     const total = enableLogging ? await length(read(filename, isArray)) : null
     const headersData = read(filename, isArray, retainPaths)
-    if (enableLogging) headersData.observe().each(ticker('detecting headers', total))
+    if (enableLogging) headersData.each(ticker('Detecting headers...', total))
     const headers = await detectHeaders(headersData, useFirstRowHeaders)
-    if (onlyShowHeaders) return Highland(headers)
+    if (onlyShowHeaders) return headers
     const bodyData = read(filename, isArray, retainPaths)
-    if (enableLogging) bodyData.observe().each(ticker('writing data     ', total))
-    const body = processBody(bodyData, headers)
+    if (enableLogging) bodyData.each(ticker('Writing data...     ', total))
+    const body = process(bodyData, headers)
     return body
 }
 

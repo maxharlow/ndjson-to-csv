@@ -1,12 +1,7 @@
 import Process from 'process'
 import Yargs from 'yargs'
 import Progress from 'progress'
-import CSVWriter from 'csv-write-stream'
 import run from './ndjson-to-csv.js'
-
-function alert(message) {
-    console.error(message)
-}
 
 function ticker(text, total) {
     const progress = new Progress(text + ' |:bar| :percent / :etas left', {
@@ -39,9 +34,10 @@ async function setup() {
             retain,
             quiet
         } = instructions.argv
-        const output = await run(input, onlyShowHeaders, useFirstRowHeaders, isArray, retain, !quiet, alert, ticker)
-        if (onlyShowHeaders) output.each(console.log)
-        else output.pipe(CSVWriter()).pipe(Process.stdout)
+        console.error('Starting up...')
+        const output = await run(input, onlyShowHeaders, useFirstRowHeaders, isArray, retain, !quiet, quiet ? () => {} : ticker)
+        if (onlyShowHeaders) output.forEach(header => console.log(header))
+        else output.CSVStringify().each(console.log)
     }
     catch (e) {
         console.error(e.message)
