@@ -1,7 +1,7 @@
 {
     "name": "ndjson-to-csv",
     "description": "Convert NDJson format data into CSV. Data is streamed, so files much bigger than the available memory can still be converted. Takes into account nested Json objects.",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "author": "Max Harlow <contact@maxharlow.com> (https://maxharlow.com/)",
     "license": "Apache-2.0",
     "type": "module",
