@@ -51,14 +51,14 @@ function process(input, headers) {
     })
 }
 
-async function run(filename, onlyShowHeaders = false, useFirstRowHeaders = false, isArray = false, retainPaths = [], enableLogging = true, ticker = () => {}) {
-    const total = enableLogging ? await length(read(filename, isArray)) : null
+async function run(filename, onlyShowHeaders = false, useFirstRowHeaders = false, isArray = false, retainPaths = [], progress = null) {
+    const total = !progress ? null : await length(read(filename, isArray))
     const headersData = read(filename, isArray, retainPaths)
-    if (enableLogging) headersData.each(ticker('Detecting headers...', total))
+    if (progress && !useFirstRowHeaders) headersData.each(progress('Detecting headers...', total))
     const headers = await detectHeaders(headersData, useFirstRowHeaders)
     if (onlyShowHeaders) return headers
     const bodyData = read(filename, isArray, retainPaths)
-    if (enableLogging) bodyData.each(ticker('Writing data...     ', total))
+    if (progress) bodyData.each(progress('Writing data...     ', total))
     const body = process(bodyData, headers)
     return body
 }
