@@ -69,10 +69,11 @@ function draw(linesDrawn) {
     const linesFull = [
         ...Object.values(alerts).map(details => {
             const width = Process.stderr.columns - (details.message.length + 1)
+            const messageTruncated = truncate(width, details.message)
             const elements = [
-                details.importance === 'error' ? Chalk.chalkStderr.red.bold(details.message) : details.message
+                details.importance === 'error' ? Chalk.chalkStderr.red.bold(messageTruncated) : messageTruncated
             ]
-            return elements.filter(x => x).join('').slice(0, Process.stderr.cols)
+            return elements.filter(x => x).join('')
         }),
         ...Object.entries(tickers).map(([operation, { proportion, prediction }]) => {
             const width = Process.stderr.columns - (operation.length + 20)
