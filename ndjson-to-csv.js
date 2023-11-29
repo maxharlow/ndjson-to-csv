@@ -21,7 +21,7 @@ function read(filename, isArray, retainPaths) {
     const stream = isArray
         ? Scramjet.DataStream.from(FS.createReadStream(filename).pipe(StreamArray.withParser())).map(entry => entry.value)
         : Scramjet.DataStream.from(FS.createReadStream(filename).pipe(NDJson.parse()))
-    if (!retainPaths || retainPaths.length === 0) return stream
+    if (!retainPaths?.length) return stream
     return stream.map(row => {
         return retainPaths.reduce((a, path) => {
             const data = JSON.stringify(extract(a, path))
@@ -34,32 +34,32 @@ function length(input) {
     return input.reduce(a => a + 1, 0)
 }
 
-function detectHeaders(input, useFirstRow) {
-    if (useFirstRow) return input.slice(0, 1).flatMap(row => Object.keys(Flat.flatten(row))).toArray()
+function detectHeaders(input, useFirstRow, retainArrays) {
+    if (useFirstRow) return input.slice(0, 1).flatMap(row => Object.keys(Flat.flatten(row, { safe: retainArrays }))).toArray()
     return input.reduce((a, row) => {
-        const keys = Object.keys(Flat.flatten(row))
+        const keys = Object.keys(Flat.flatten(row, { safe: retainArrays }))
         return Array.from(new Set(a.concat(keys)))
     }, [])
 }
 
-function process(input, headers) {
+function process(input, headers, retainArrays) {
     return input.map(row => {
-        const rowFlat = Flat.flatten(row)
+        const rowFlat = Object.fromEntries(Object.entries(Flat.flatten(row, { safe: retainArrays })).map(([key, value]) => [key, Array.isArray(value) ? JSON.stringify(value) : value]))
         return headers.slice().reverse().reduce((a, header) => {
             return Object.assign({ [header]: rowFlat[header] }, a)
         }, {})
     })
 }
 
-async function run(filename, onlyShowHeaders = false, useFirstRowHeaders = false, isArray = false, retainPaths = [], progress = null) {
+async function run(filename, onlyShowHeaders = false, useFirstRowHeaders = false, isArray = false, retainPaths = [], retainArrays = false, progress = null) {
     const total = !progress ? null : await length(read(filename, isArray))
     const headersData = read(filename, isArray, retainPaths)
     if (progress && !useFirstRowHeaders) headersData.each(progress('Detecting headers...', total))
-    const headers = await detectHeaders(headersData, useFirstRowHeaders)
+    const headers = await detectHeaders(headersData, useFirstRowHeaders, retainArrays)
     if (onlyShowHeaders) return headers
     const bodyData = read(filename, isArray, retainPaths)
     if (progress) bodyData.each(progress('Writing data...     ', total))
-    const body = process(bodyData, headers)
+    const body = process(bodyData, headers, retainArrays)
     return body
 }
 
