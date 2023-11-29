@@ -2,7 +2,7 @@ import FS from 'fs'
 import Scramjet from 'scramjet'
 import NDJson from 'ndjson'
 import StreamArray from 'stream-json/streamers/StreamArray.js'
-import Flat from 'flat'
+import * as Flat from 'flat'
 
 function extract(object, path) {
     const paths = path.split('.')
@@ -35,16 +35,16 @@ function length(input) {
 }
 
 function detectHeaders(input, useFirstRow) {
-    if (useFirstRow) return input.slice(0, 1).flatMap(row => Object.keys(Flat(row))).toArray()
+    if (useFirstRow) return input.slice(0, 1).flatMap(row => Object.keys(Flat.flatten(row))).toArray()
     return input.reduce((a, row) => {
-        const keys = Object.keys(Flat(row))
+        const keys = Object.keys(Flat.flatten(row))
         return Array.from(new Set(a.concat(keys)))
     }, [])
 }
 
 function process(input, headers) {
     return input.map(row => {
-        const rowFlat = Flat(row)
+        const rowFlat = Flat.flatten(row)
         return headers.slice().reverse().reduce((a, header) => {
             return Object.assign({ [header]: rowFlat[header] }, a)
         }, {})

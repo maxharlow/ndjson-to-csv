@@ -2,6 +2,7 @@ import Process from 'process'
 import Events from 'events'
 import * as Luxon from 'luxon'
 import * as Chalk from 'chalk'
+import SimpleWCSWidth from 'simple-wcswidth'
 
 const events = new Events.EventEmitter()
 const beginning = new Date()

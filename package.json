@@ -10,13 +10,14 @@
         "url": "https://github.com/maxharlow/ndjson-to-csv.git"
     },
     "dependencies": {
-        "chalk": "5.2.x",
-        "flat": "5.0.x",
-        "luxon": "3.2.x",
+        "chalk": "5.3.x",
+        "flat": "6.0.x",
+        "luxon": "3.4.x",
         "ndjson": "2.0.x",
-        "scramjet": "4.36.x",
-        "stream-json": "1.7.x",
-        "yargs": "17.6.x"
+        "scramjet": "4.37.x",
+        "simple-wcswidth": "1.0.x",
+        "stream-json": "1.8.x",
+        "yargs": "17.7.x"
     },
     "bin": {
         "ndjson-to-csv": "./bin.js"
