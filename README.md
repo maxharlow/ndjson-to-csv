@@ -1,6 +1,8 @@
 NDJson-to-CSV
 =============
 
+**Superseded by [Entabulate](https://github.com/maxharlow/entabulate).**
+
 Convert NDJson format data into CSV. Data is streamed, so files much bigger than the available memory can still be converted. Takes into account nested Json objects.
 
 
